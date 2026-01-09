@@ -7,6 +7,8 @@
 
 **Samvaya** (Sanskrit: "Connection" or "Community") is a purpose-driven events platform that brings together individuals, organizations, and communities to create positive social impact. Unlike commercial event platforms, Samvaya focuses exclusively on **non-profit and community-driven initiatives** that address real-world challenges.
 
+**Demo Link**: [Watch on YouTube](https://youtu.be/iRyY4leB9Uw?si=h1RMCB5kaZNHJV6U)
+
 ### **Social Impact Focus**
 
 Samvaya serves as a digital bridge for:
