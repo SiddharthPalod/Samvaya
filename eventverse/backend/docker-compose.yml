@@ -1,0 +1,220 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: eventverse-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eventverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - backend
+
+  redis:
+    image: redis:7
+    container_name: eventverse-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: eventverse-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - backend
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: eventverse-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - backend
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: eventverse-auth-service
+    depends_on:
+      - postgres
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8081:8081"
+    networks:
+      - backend
+
+  event-service:
+    build:
+      context: ./event-service
+    container_name: eventverse-event-service
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8082:8082"
+    networks:
+      - backend
+
+  ticket-service:
+    build:
+      context: ./ticket-service
+    container_name: eventverse-ticket-service
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8083:8083"
+    networks:
+      - backend
+
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: eventverse-notification-service
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8084:8084"
+    networks:
+      - backend
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: eventverse-api-gateway
+    depends_on:
+      - auth-service
+      - event-service
+      - ticket-service
+      - notification-service
+      - chat-service
+      - analytics-service
+      - media-service
+      - redis
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8085:8085"
+    networks:
+      - backend
+
+  chat-service:
+    build:
+      context: ./chat-service
+    container_name: eventverse-chat-service
+    depends_on:
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8086:8086"
+    networks:
+      - backend
+
+  media-service:
+    build:
+      context: ./media-service
+    container_name: eventverse-media-service
+    volumes:
+      - ./media-storage:/app/media-storage
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8087:8087"
+    networks:
+      - backend
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+    container_name: eventverse-analytics-service
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8088:8088"
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: eventverse-nginx
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: eventverse-frontend
+    depends_on:
+      - api-gateway
+    environment:
+      # Next.js will call the API gateway directly on 8085
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8085
+    ports:
+      - "3000:3000"
+    networks:
+      - backend
+
+  manager:
+    build:
+      context: ../manager
+    container_name: eventverse-manager
+    depends_on:
+      - api-gateway
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8085
+    ports:
+      # Expose manager on host 3001, container listens on 3000 (Next.js default)
+      - "3001:3000"
+    networks:
+      - backend
+
+volumes:
+  postgres-data:
+    name: eventverse-postgres-data
+
+networks:
+  backend:
+    driver: bridge
+    name: eventverse-backend

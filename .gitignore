@@ -1,0 +1,76 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+*.tgz
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.*
+*.local
+
+# Spring Boot application properties (may contain sensitive data)
+application.properties
+application-*.properties
+application.yml
+application-*.yml
+bootstrap.properties
+bootstrap-*.properties
+bootstrap.yml
+bootstrap-*.yml
+
+# Node / Next.js / JS toolchains
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+*.tsbuildinfo
+**/next-env.d.ts
+**/.turbo/
+
+# Build / coverage outputs
+build/
+dist/
+coverage/
+**/build/
+**/dist/
+**/coverage/
+**/.next/
+**/out/
+
+# Runtime / media artifacts
+eventverse/backend/media-storage/
+
+# Gradle / Java
+.gradle/
+**/.gradle/
+bin/
+out/
+**/bin/
+**/out/
+*.class
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Misc project files
+HELP.md
+

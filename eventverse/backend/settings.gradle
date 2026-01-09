@@ -1,0 +1,2 @@
+rootProject.name = 'backend'
+include 'auth-service', 'api-gateway', 'event-service', 'ticket-service', 'notification-service', 'chat-service', 'media-service', 'analytics-service'
