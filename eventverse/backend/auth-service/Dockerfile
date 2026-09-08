@@ -1,5 +1,5 @@
 # Auth Service
-FROM eclipse-temurin:17-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /app
 
 # Copy Gradle wrapper and project files
@@ -11,7 +11,7 @@ COPY src ./src
 RUN chmod +x gradlew \
     && ./gradlew bootJar -x test --no-daemon
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 # Copy built jar
